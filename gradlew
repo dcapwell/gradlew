@@ -5,7 +5,7 @@
 ## This way you don't have to worry about binaries in your build.
 ##
 ## Depdencies
-## unzip zip
+## unzip
 ##
 
 set -e
@@ -117,17 +117,6 @@ download() {
   pushd "$base_path"
     touch "$file_name.lck"
     unzip "$file_name" 1> /dev/null
-    pushd "$dir_name/lib"
-      # gradle wrapper requires this file to be top level in classpath
-      unzip gradle-core-*.jar org/gradle/build-receipt.properties
-      mv org/gradle/build-receipt.properties .
-      rm -rf org/
-      # gradle wrapper finds the jar it was loaded from, and uses the path
-      # to find the properties file. 
-      # copy it into the project so it shows up
-      # symlink won't show up for the function
-      cp gradle-wrapper-*.jar $bin/gradle/wrapper/gradle-wrapper.jar
-    popd
     touch "$file_name.ok"
   popd
 }
@@ -164,8 +153,7 @@ main() {
   eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS
   JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
 
-  #TODO find if there is a way to bypass the wrapper code completely
-  $JAVA "${JVM_OPTS[@]}" -cp $bin/gradle/wrapper/gradle-wrapper.jar:$(classpath) org.gradle.wrapper.GradleWrapperMain "$@"
+  $JAVA "${JVM_OPTS[@]}" -cp $bin/gradle/wrapper/gradle-wrapper.jar:$(classpath) org.gradle.launcher.GradleMain "$@"
 }
 
 main "$@"
