@@ -4,6 +4,9 @@
 ## Tries to recreate Gradle's gradlew command in pure bash.
 ## This way you don't have to worry about binaries in your build.
 ##
+## Depdencies
+## unzip zip
+##
 
 set -e
 set -o pipefail
