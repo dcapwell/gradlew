@@ -20,7 +20,18 @@ APP_BASE_NAME=`basename "$0"`
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
-. "$bin/gradle/wrapper/gradle-wrapper.properties"
+if [ -e "$bin/gradle/wrapper/gradle-wrapper.properties" ]; then
+  . "$bin/gradle/wrapper/gradle-wrapper.properties"
+else
+  # the location that the wrapper is at doesn't have a properties
+  # check PWD, gradlew may be shared
+  if [ -e "$PWD/gradle/wrapper/gradle-wrapper.properties" ]; then
+    . "$PWD/gradle/wrapper/gradle-wrapper.properties"
+  else
+    echo "Unable to locate gradle-wrapper.properties.  Not at $PWD/gradle/wrapper/gradle-wrapper.properties or $bin/gradle/wrapper/gradle-wrapper.properties" 1>&2
+    exit 1
+  fi
+fi
 
 warn ( ) {
     echo "$*"
@@ -157,7 +168,7 @@ main() {
   eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS
   JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
 
-  $JAVA "${JVM_OPTS[@]}" -cp $bin/gradle/wrapper/gradle-wrapper.jar:$(classpath) org.gradle.launcher.GradleMain "$@"
+  $JAVA "${JVM_OPTS[@]}" -cp $(classpath) org.gradle.launcher.GradleMain "$@"
 }
 
 main "$@"
