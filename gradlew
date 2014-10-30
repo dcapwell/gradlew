@@ -11,11 +11,12 @@
 set -e
 set -o pipefail
 
-# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-DEFAULT_JVM_OPTS=""
 
 APP_NAME="Gradle"
 APP_BASE_NAME=`basename "$0"`
+
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS="-Dorg.gradle.appname=$APP_BASE_NAME"
 
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
@@ -156,7 +157,7 @@ classpath() {
 }
 
 # Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules
-function splitJvmOpts() {
+splitJvmOpts() {
   JVM_OPTS=("$@")
 }
 
@@ -166,7 +167,6 @@ main() {
   fi
 
   eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS
-  JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
 
   $JAVA "${JVM_OPTS[@]}" -cp $(classpath) org.gradle.launcher.GradleMain "$@"
 }
