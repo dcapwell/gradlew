@@ -8,12 +8,78 @@
 set -e
 set -o pipefail
 
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS=""
+
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+
 bin=`dirname "$0"`
 bin=`cd "$bin">/dev/null; pwd`
 
 . "$bin/gradle/wrapper/gradle-wrapper.properties"
 
-JAVA="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/java"
+warn ( ) {
+    echo "$*"
+}
+
+die ( ) {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
+# OS specific support (must be 'true' or 'false').
+darwin=false
+case "`uname`" in
+  Darwin* )
+    darwin=true
+    ;;
+esac
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        # IBM's JDK on AIX uses strange locations for the executables
+        JAVA="$JAVA_HOME/jre/sh/java"
+    else
+        JAVA="$JAVA_HOME/bin/java"
+    fi
+    if [ ! -x "$JAVA" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+else
+    JAVA="java"
+    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+fi
+
+# Increase the maximum file descriptors if we can.
+if [ "$darwin" = "false" ] ; then
+    MAX_FD_LIMIT=`ulimit -H -n`
+    if [ $? -eq 0 ] ; then
+        if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+            MAX_FD="$MAX_FD_LIMIT"
+        fi
+        ulimit -n $MAX_FD
+        if [ $? -ne 0 ] ; then
+            warn "Could not set maximum file descriptor limit: $MAX_FD"
+        fi
+    else
+        warn "Could not query maximum file descriptor limit: $MAX_FD_LIMIT"
+    fi
+fi
+
+# For Darwin, add options to specify how the application appears in the dock
+if $darwin; then
+    GRADLE_OPTS="$GRADLE_OPTS \"-Xdock:name=$APP_NAME\" \"-Xdock:icon=$bin/media/gradle.icns\""
+fi
 
 # does not match gradle's hash
 # waiting for http://stackoverflow.com/questions/26642077/java-biginteger-in-bash-rewrite-gradlew
@@ -78,13 +144,21 @@ classpath() {
   echo "$dir:$cp"
 }
 
+# Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules
+function splitJvmOpts() {
+  JVM_OPTS=("$@")
+}
+
 main() {
   if ! is_cached; then
     download
   fi
 
-  # echo $bin/gradle/wrapper/gradle-wrapper.jar:$(classpath) 
-  $JAVA -cp $bin/gradle/wrapper/gradle-wrapper.jar:$(classpath) org.gradle.wrapper.GradleWrapperMain "$@"
+  eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS
+  JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
+
+  #TODO find if there is a way to bypass the wrapper code completely
+  $JAVA "${JVM_OPTS[@]}" -cp $bin/gradle/wrapper/gradle-wrapper.jar:$(classpath) org.gradle.wrapper.GradleWrapperMain "$@"
 }
 
 main "$@"
