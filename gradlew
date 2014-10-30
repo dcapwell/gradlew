@@ -85,7 +85,11 @@ fi
 # waiting for http://stackoverflow.com/questions/26642077/java-biginteger-in-bash-rewrite-gradlew
 hash() {
   local input="$1"
-  md5 -q -s "$1"
+  if $darwin; then
+    md5 -q -s "$1"
+  else
+    echo -n "$1" | md5sum  | cut -d" " -f1
+  fi
 }
 
 dist_path() {
