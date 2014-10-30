@@ -109,6 +109,10 @@ download() {
 
   if [ ! -d "$base_path" ]; then
     mkdir -p "$base_path"
+  else
+    # if data already exists, it means we failed to do this before
+    # so cleanup last run and try again
+    rm -rf $base_path/*
   fi
 
   # download dist. curl on mac doesn't like the cert provided...
