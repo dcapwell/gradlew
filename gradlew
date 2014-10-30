@@ -111,7 +111,14 @@ dist_path() {
   local dir=$(basename $distributionUrl | sed 's;.zip;;g')
   local id=$(hash "$distributionUrl")
 
-  echo "$HOME/.gradle/wrapper/dists/$dir/$id"
+  echo "$HOME/.gradle/${distributionPath:-wrapper/dists}/$dir/$id"
+}
+
+zip_path() {
+  local dir=$(basename $distributionUrl | sed 's;.zip;;g')
+  local id=$(hash "$distributionUrl")
+
+  echo "$HOME/.gradle/${zipStorePath:-wrapper/dists}/$dir/$id"
 }
 
 download() {
@@ -128,11 +135,12 @@ download() {
   fi
 
   # download dist. curl on mac doesn't like the cert provided...
-  curl --insecure -L -o "$base_path/$file_name" "$distributionUrl"
+  local zip_path=$(zip_path)
+  curl --insecure -L -o "$zip_path/$file_name" "$distributionUrl"
 
   pushd "$base_path"
     touch "$file_name.lck"
-    unzip "$file_name" 1> /dev/null
+    unzip "$zip_path/$file_name" 1> /dev/null
     touch "$file_name.ok"
   popd
 }
